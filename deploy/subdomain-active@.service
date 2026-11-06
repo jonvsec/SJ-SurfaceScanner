@@ -1,0 +1,24 @@
+# SurfaceScanner active subdomain enumeration, single-shot service.
+#
+# Adds amass active, permutation and wordlist bruteforce, zone transfer, and
+# takeover detection. This sends DNS traffic to the client, so per the network
+# boundary it should run on the disposable egress host, not an analyst machine.
+# Templated by client slug.
+#
+#   cp deploy/subdomain-active@.service deploy/subdomain-active@.timer ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now subdomain-active@acme.timer
+
+[Unit]
+Description=SurfaceScanner active subdomain enumeration for %i
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/surfacescanner
+EnvironmentFile=/opt/surfacescanner/.env
+ExecStart=/opt/surfacescanner/.venv/bin/python tools/subdomain_watch.py --scope ${SURFACESCANNER_DATA}/scopes/%i.yaml --mode active --once
+Nice=15
+# Active enumeration (amass, bruteforce) can run long. Give it room.
+TimeoutStartSec=14400

@@ -1,0 +1,35 @@
+# Pre-commit guard allowlist. Generic placeholders and verified-public values
+# only. NEVER put a real client name, a real client domain, a real client email
+# or a real client IP here. Secrets and the client-name denylist are always
+# checked, even in skipped paths.
+#
+# Line formats:
+#   domain:<d>     allow emails at this domain (and its subdomains)
+#   email:<addr>   allow this exact email address
+#   ip:<addr>      allow this exact public IP
+#   token:<str>    clear a secret-pattern match equal to this literal
+#   skip:<glob>    skip IP and email checks for matching paths (dir ends with /)
+# A bare line with @ is an email, a bare line without @ is a domain.
+#
+# Structural, handled in code (no entry needed): systemd unit names
+# (name@instance.service/.timer/...) and reserved TLDs (.example/.test/.invalid).
+
+# placeholder and reserved documentation/test email domains
+domain:example.com
+domain:example.org
+domain:example.net
+domain:yourcompany.com
+domain:company.com
+domain:hibp-integration-tests.com
+
+# specific test fixtures present in the code
+email:noreply@anthropic.com
+email:relaytest@gmail.com
+
+# public infrastructure referenced in code (DNS resolver)
+ip:1.1.1.1
+
+# data files: lists of public values and dependency locks, not engagement data
+skip:wordlists/
+skip:tests/
+skip:*.lock

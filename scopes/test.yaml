@@ -1,0 +1,9 @@
+target:
+  name: 'Example Corp'
+  sector: 'technology'
+
+domains:
+  - example.com
+
+mode: passive
+data_classification: SEMI-PUBLIC

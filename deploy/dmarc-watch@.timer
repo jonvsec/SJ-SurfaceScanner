@@ -1,0 +1,19 @@
+# Cadence for the SurfaceScanner email-auth posture watcher.
+#
+# Runs dmarc-watch@%i.service once a week, and once 10 minutes after boot.
+# Email-authentication posture changes slowly, so weekly is the default. Change
+# OnUnitActiveSec for a different cadence (for example 1d for daily). The feed
+# is regression-only, so a quiet week emits nothing. Persistent=true runs a
+# missed cycle after downtime.
+
+[Unit]
+Description=Run the SurfaceScanner email-auth posture watcher for %i on a cadence
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=1w
+Persistent=true
+Unit=dmarc-watch@%i.service
+
+[Install]
+WantedBy=timers.target

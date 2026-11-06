@@ -1,0 +1,34 @@
+# SurfaceScanner email-auth posture watcher, cadence (single-shot) service.
+#
+# The regression-only sibling of lookalike-watch: it reads DMARC/SPF/DKIM/MX
+# from public DNS and emits a signal only when a domain's posture regresses.
+#
+# Templated by scope name. Enable one instance per engagement, where the
+# instance name is the scope file stem. Example, for a scope at
+# $SURFACESCANNER_DATA/scopes/acme.yaml, enable dmarc-watch@acme.
+#
+# This runs one cycle and exits. The paired .timer drives the cadence.
+#
+# Install as a user unit:
+#   mkdir -p ~/.config/systemd/user
+#   cp deploy/dmarc-watch@.service deploy/dmarc-watch@.timer ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now dmarc-watch@acme.timer
+
+[Unit]
+Description=SurfaceScanner email-auth posture watcher for %i
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# Point WorkingDirectory and EnvironmentFile at your install. The .env sets
+# SURFACESCANNER_ROOT, SURFACESCANNER_DATA and SURFACESCANNER_TMP.
+WorkingDirectory=/opt/surfacescanner
+EnvironmentFile=/opt/surfacescanner/.env
+# Scopes live under the data root, never in the code tree. systemd expands
+# ${SURFACESCANNER_DATA} from the EnvironmentFile above.
+ExecStart=/opt/surfacescanner/.venv/bin/python tools/dmarc_watch.py --scope ${SURFACESCANNER_DATA}/scopes/%i.yaml --once
+Nice=10
+# A posture read is quick, but give slow DNS room.
+TimeoutStartSec=1800

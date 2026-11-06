@@ -1,0 +1,29 @@
+# SurfaceScanner layer-0 company footprint, single-shot service.
+#
+# Agent-backed investigative phase. Runs the maintained Claude Code skill
+# eas-company-footprint headless, then the engine validates what it wrote
+# against the four hard invariants before any signal is accepted. See
+# deploy/LAYER0_FOOTPRINT_BRIEF.md. Templated by client slug, same convention
+# as the other watchers.
+#
+#   cp deploy/footprint@.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user start footprint@acme.service
+#
+# ANTHROPIC_API_KEY and any search or registry keys live in the EnvironmentFile
+# as secrets, never in the skill and never in the repo. Confirm the engagement
+# data-classification allows sending company data to the API before wiring a
+# timer to fire this automatically (see the brief, data-handling note).
+
+[Unit]
+Description=SurfaceScanner layer-0 company footprint for %i
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/surfacescanner
+EnvironmentFile=/opt/surfacescanner/.env
+ExecStart=/opt/surfacescanner/.venv/bin/python tools/footprint_run.py --scope ${SURFACESCANNER_DATA}/scopes/%i.yaml --once
+Nice=10
+TimeoutStartSec=3600

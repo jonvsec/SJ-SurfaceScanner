@@ -1,0 +1,22 @@
+# SurfaceScanner passive subdomain enumeration, single-shot service.
+#
+# Contactless discovery (certificate transparency, passive aggregators) plus
+# resolution of what they find. Safe to run from anywhere. Templated by client
+# slug, same convention as the other watchers.
+#
+#   cp deploy/subdomain-passive@.service deploy/subdomain-passive@.timer ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now subdomain-passive@acme.timer
+
+[Unit]
+Description=SurfaceScanner passive subdomain enumeration for %i
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/surfacescanner
+EnvironmentFile=/opt/surfacescanner/.env
+ExecStart=/opt/surfacescanner/.venv/bin/python tools/subdomain_watch.py --scope ${SURFACESCANNER_DATA}/scopes/%i.yaml --mode passive --once
+Nice=10
+TimeoutStartSec=1800

@@ -1,0 +1,17 @@
+# Cadence for the SurfaceScanner lookalike watcher.
+#
+# Runs lookalike-watch@%i.service every 6 hours, and once 5 minutes after boot.
+# Change OnUnitActiveSec for a different cadence (for example 1d for daily,
+# or 1w for weekly). Persistent=true runs a missed cycle after downtime.
+
+[Unit]
+Description=Run the SurfaceScanner lookalike watcher for %i on a cadence
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=6h
+Persistent=true
+Unit=lookalike-watch@%i.service
+
+[Install]
+WantedBy=timers.target

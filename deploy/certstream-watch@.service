@@ -1,0 +1,33 @@
+# SurfaceScanner real-time CertStream watcher, long-running service.
+#
+# This is the always-on watcher. It stays connected to the Certificate
+# Transparency firehose and flags a lookalike the moment a matching TLS
+# certificate is issued, which is often before the domain is weaponised.
+#
+# Templated by scope name, same convention as the cadence watcher. For a scope
+# at $SURFACESCANNER_DATA/scopes/acme.yaml, enable certstream-watch@acme.
+#
+# Install as a user unit:
+#   cp deploy/certstream-watch@.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now certstream-watch@acme
+#
+# It needs the websocket client extra. If that is absent the process warns and
+# exits cleanly, so the service simply will not stay up until it is installed.
+
+[Unit]
+Description=SurfaceScanner real-time CertStream lookalike watcher for %i
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/surfacescanner
+EnvironmentFile=/opt/surfacescanner/.env
+ExecStart=/opt/surfacescanner/.venv/bin/python tools/certstream_watch.py --scope ${SURFACESCANNER_DATA}/scopes/%i.yaml
+# The CT firehose drops connections routinely. Reconnect rather than give up.
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=default.target

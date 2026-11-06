@@ -1,0 +1,13 @@
+# Cadence for active subdomain enumeration. Weekly by default, it is heavier
+# and noisier than the passive sweep.
+[Unit]
+Description=Run active subdomain enumeration for %i on a cadence
+
+[Timer]
+OnBootSec=15min
+OnUnitActiveSec=1w
+Persistent=true
+Unit=subdomain-active@%i.service
+
+[Install]
+WantedBy=timers.target

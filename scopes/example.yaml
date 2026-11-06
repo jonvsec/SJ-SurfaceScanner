@@ -1,0 +1,6 @@
+data_classification: SEMI-PUBLIC
+domains:
+- example.com
+mode: passive
+target:
+  name: Example Corp

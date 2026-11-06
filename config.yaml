@@ -1,0 +1,72 @@
+# SurfaceScanner system configuration.
+# This repo ships the lookalike and brand protection vertical. Other phases are
+# promoted in over time. Their config sections get added alongside them.
+# Engagement data (scopes, outputs, reports, signals) never lives here. It is
+# written under SURFACESCANNER_DATA, one directory per client.
+
+logging:
+  level: INFO
+  structured: true
+
+output:
+  formats:
+    - markdown
+  template: default
+
+timeouts:
+  default: 30
+
+rate_limits:
+  default: 5
+
+network:
+  # Active recon should originate from a disposable VPS so it is attributable to
+  # a controlled, allowlisted address rather than the operator's own IP. Set the
+  # host and key below and flip this to true once a VPS is provisioned.
+  active_recon_via_vps: false
+  vps_ssh_host:
+  vps_ssh_key:
+
+# ---------------------------------------------------------------------------
+# Brand protection / lookalike-domain pipeline
+# (layer1/brand_protection + layer1/newly_registered_domains + tools/lookalike_watch
+#  + tools/certstream_watch)
+#
+# Fully local, scripting only, no AI. The enrich_* steps touch the lookalike
+# host (never the client) and run only in semi/active mode. The sev_map below is
+# the SEV1 to SEV5 mapping, kept here so it can be retuned without code changes.
+# SEV1 is reserved for a confirmed live clone (serves a login AND visually
+# matches AND can send mail).
+# ---------------------------------------------------------------------------
+brand_protection:
+  dnstwist_threads: 20
+  dnstwist_timeout: 1800
+  use_phash: false              # dnstwist screenshot perceptual hash (needs headless browser, semi/active only)
+  use_lsh: ssdeep               # "", ssdeep or tlsh. HTML fuzzy hash vs the real page (semi/active only)
+  recent_days: 180
+  stale_days: 730               # registered longer ago than this, no mail, no active content -> info
+  weights: {mx: 3, a: 1, recent: 2, ns_differ: 1}
+  min_distinctive_len: 6
+  always_enrich: true           # lookalike hosts are suspect by definition, so active checks run regardless of scope mode. set false for a contactless run
+  enrich_favicon: true
+  enrich_http: true
+  enrich_screenshot: false      # gowitness, optional external binary
+  max_enrich: 200
+  crtsh_enabled: true
+  nrd_feed_url: ""              # WHOISDS newly-registered-domains daily zip, set per deployment
+  fuzzy_max_distance: 2
+  extra_generators: []          # optional: [urlcrazy, ail-typo-squatting]
+  certstream_url: "wss://certstream.calidog.io/"
+  certstream_keywords: [login, secure, account, verify, support, portal, sso]
+  signals_dir: "outputs/signals"
+  sev_map:
+    base: {critical: SEV2, high: SEV2, medium: SEV3, low: SEV4, info: SEV5}
+    sev1_when_all: [serves_login, visual_match, mail_capable]
+    sev2_when_any_with_mail: [serves_login, visual_match, favicon_match]
+
+# SearXNG search backend. The default engine set is frequently CAPTCHA or
+# rate-limit blocked and then returns zero results. On this instance only bing
+# responds, so pin it. Retune per deployment if other engines come back.
+searxng:
+  url: "http://localhost:8888"
+  engines: "bing"

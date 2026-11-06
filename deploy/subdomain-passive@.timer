@@ -1,0 +1,12 @@
+# Cadence for passive subdomain enumeration. Every 12 hours by default.
+[Unit]
+Description=Run passive subdomain enumeration for %i on a cadence
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=12h
+Persistent=true
+Unit=subdomain-passive@%i.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,23 @@
+# Optional cadence for the layer-0 company footprint.
+#
+# DO NOT enable this until the data-handling note in LAYER0_FOOTPRINT_BRIEF.md
+# is confirmed for the client: this phase sends client company data and the
+# skill prompts to the Anthropic API on every run. For an authorized EAS that
+# is normally fine, but confirm it is acceptable under the client contract and
+# the engagement data-classification before firing it unattended.
+#
+# The footprint is mostly a once-per-engagement job, so a monthly re-run is
+# plenty when you do want a cadence. Most operators run it on demand with
+# `systemctl --user start footprint@<slug>.service` instead.
+
+[Unit]
+Description=Re-run the layer-0 company footprint for %i on a cadence
+
+[Timer]
+OnBootSec=30min
+OnUnitActiveSec=30d
+Persistent=true
+Unit=footprint@%i.service
+
+[Install]
+WantedBy=timers.target

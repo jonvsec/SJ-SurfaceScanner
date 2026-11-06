@@ -1,0 +1,46 @@
+# Secrets — never commit
+.env
+*.key
+*.pem
+*.p12
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Engagement data lives under SURFACESCANNER_DATA, never in the repo.
+# These dirs only appear if someone points DATA back into the tree.
+outputs/
+reports/
+logs/
+state/
+signals/
+engagements/
+
+# Scopes are engagement data. Track only the examples.
+scopes/*
+!scopes/example.yaml
+!scopes/test.yaml
+
+# Temp
+/tmp/surfacescanner*/
+*.tmp
+*.bak
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Company deliverable templates and recon outputs, never commit
+tools/templates/
+subs_out.txt
